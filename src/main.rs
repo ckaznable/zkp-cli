@@ -1,27 +1,40 @@
-mod ascii;
+use clap::Parser;
+use client::{GameClient, Host, SocketLogger};
+use std::net::ToSocketAddrs;
 
-use ascii::{ print_ascii, ZyanKen };
-use dialoguer::{Select, theme::ColorfulTheme, console::Term};
+mod args;
+mod ascii;
+mod client;
+mod game;
 
 fn main() -> std::io::Result<()> {
-    let items = vec!["paper", "scissors", "rock"];
-    let selection = Select::with_theme(&ColorfulTheme::default())
-        .items(&items)
-        .default(0)
-        .interact_on_opt(&Term::stderr())?;
+    let args = args::Args::parse();
+    let mut host = Host::new();
 
-    match selection {
-        Some(index) => {
-            print_ascii(match index {
-                0 => ZyanKen::PA,
-                1 => ZyanKen::CHYOUKI,
-                2 => ZyanKen::GU,
-                _ => panic!()
-            })
-        },
-        None => println!("User did not select anything")
+    if !args.host && args.connect.eq("") {
+        panic!("parameter error");
     }
+
+    match args.host {
+        true => {
+            host.log_listen_socket();
+            host.wait_hand_shake();
+        }
+        false => {
+            let addr = args
+                .connect
+                .as_str()
+                .to_socket_addrs()?
+                .next()
+                .expect("is not invalid ip");
+            host.set_addr(addr);
+            host.send_hand_shake();
+        }
+    };
+
+    host.log_on_hand_shake();
+    host.choice();
+    host.judge();
 
     Ok(())
 }
-
