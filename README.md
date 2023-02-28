@@ -4,6 +4,12 @@ p2p paper scissors rock game in cli
 
 ---
 
+## Installation
+
+### Install from Github Release
+
+Download the last version binary depending on your configuration here: [Release Page](https://github.com/ckaznable/zkp-cli/releases/latest)
+
 ## Usage
 
 ```shell
